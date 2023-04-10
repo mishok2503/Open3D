@@ -162,6 +162,24 @@ public:
     std::vector<size_t> indices_;
 };
 
+
+class OctreeInternalDSNode : public OctreeInternalNode {
+public:
+    OctreeInternalDSNode() : OctreeInternalNode() {}
+
+    static std::function<std::shared_ptr<OctreeInternalNode>()>
+    GetInitFunction();
+
+    static std::function<void(std::shared_ptr<OctreeInternalNode>)>
+    GetUpdateFunction();
+
+    bool ConvertToJsonValue(Json::Value& value) const override;
+    bool ConvertFromJsonValue(const Json::Value& value) override;
+
+public:
+    float probability = 0.5;
+};
+
 /// \class OctreeLeafNode
 ///
 /// \brief OctreeLeafNode base class.
@@ -202,6 +220,24 @@ public:
     /// TODO: flexible data, with lambda function for handling node
     /// Color of the node.
     Eigen::Vector3d color_ = Eigen::Vector3d(0, 0, 0);
+};
+
+class OctreeDSLeafNode : public OctreeLeafNode {
+public:
+    bool operator==(const OctreeLeafNode& other) const override;
+
+    std::shared_ptr<OctreeLeafNode> Clone() const override;
+
+    static std::function<std::shared_ptr<OctreeLeafNode>()> GetInitFunction();
+
+    static std::function<void(std::shared_ptr<OctreeLeafNode>)>
+    GetUpdateFunction();
+
+    bool ConvertToJsonValue(Json::Value& value) const override;
+    bool ConvertFromJsonValue(const Json::Value& value) override;
+
+public:
+    float probability = 0.5;
 };
 
 /// \class OctreePointColorLeafNode
