@@ -190,6 +190,36 @@ bool OctreeInternalPointNode::ConvertFromJsonValue(const Json::Value& value) {
     return rc;
 }
 
+
+std::function<std::shared_ptr<OctreeInternalNode>()>
+OctreeInternalDSNode::GetInitFunction() {
+    return []() -> std::shared_ptr<geometry::OctreeInternalNode> {
+        return std::make_shared<geometry::OctreeInternalDSNode>();
+    };
+}
+
+std::function<void(std::shared_ptr<OctreeInternalNode>)>
+OctreeInternalDSNode::GetUpdateFunction() {
+    return [](std::shared_ptr<geometry::OctreeInternalNode> node) -> void {
+        if (auto internal_ds_node = std::dynamic_pointer_cast<
+                    geometry::OctreeInternalDSNode>(node)) {
+            // some update here
+        } else {
+            utility::LogError(
+                    "Internal error: internal node must be "
+                    "OctreeInternalDSNode");
+        }
+    };
+}
+
+bool OctreeInternalDSNode::ConvertToJsonValue(Json::Value& value) const {
+    return true;
+}
+
+bool OctreeInternalDSNode::ConvertFromJsonValue(const Json::Value& value) {
+    return true;
+}
+
 std::function<std::shared_ptr<OctreeLeafNode>()>
 OctreeColorLeafNode::GetInitFunction() {
     return []() -> std::shared_ptr<geometry::OctreeLeafNode> {
@@ -245,6 +275,51 @@ bool OctreeColorLeafNode::ConvertFromJsonValue(const Json::Value& value) {
         return false;
     }
     return EigenVector3dFromJsonArray(color_, value["color"]);
+}
+
+std::function<std::shared_ptr<OctreeLeafNode>()>
+OctreeDSLeafNode::GetInitFunction() {
+    return []() -> std::shared_ptr<geometry::OctreeLeafNode> {
+        return std::make_shared<geometry::OctreeDSLeafNode>();
+    };
+}
+
+std::function<void(std::shared_ptr<OctreeLeafNode>)>
+OctreeDSLeafNode::GetUpdateFunction() {
+    return [](std::shared_ptr<geometry::OctreeLeafNode> node) -> void {
+        if (auto color_leaf_node =
+                    std::dynamic_pointer_cast<geometry::OctreeDSLeafNode>(
+                            node)) {
+            // update here
+        } else {
+            utility::LogError(
+                    "Internal error: leaf node must be OctreeDSLeafNode");
+        }
+    };
+}
+
+std::shared_ptr<OctreeLeafNode> OctreeDSLeafNode::Clone() const {
+    auto cloned_node = std::make_shared<OctreeDSLeafNode>();
+    cloned_node->probability = probability;
+    return cloned_node;
+}
+
+bool OctreeDSLeafNode::operator==(const OctreeLeafNode& that) const {
+    try {
+        const OctreeDSLeafNode& that_ds_node =
+                dynamic_cast<const OctreeDSLeafNode&>(that);
+        return this->probability == that_ds_node.probability;
+    } catch (const std::exception&) {
+        return false;
+    }
+}
+
+bool OctreeDSLeafNode::ConvertToJsonValue(Json::Value& value) const {
+    return true;
+}
+
+bool OctreeDSLeafNode::ConvertFromJsonValue(const Json::Value& value) {
+    return true;
 }
 
 std::function<std::shared_ptr<OctreeLeafNode>()>
